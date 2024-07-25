@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect, Suspense } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { useMediaQuery } from 'react-responsive';
 import Laptop from '../components/Laptop';
 import Popup from '../components/Popup';
 import RotationButton from '../components/RotationButton';
@@ -15,7 +14,6 @@ export default function TopologiJaringan() {
   const rotateInterval = useRef<NodeJS.Timeout | null>(null);
   const [data, setData] = useState({ popup1: '', popup2: '' });
 
-  const isMobile = useMediaQuery({ query: '(max-width: 768px)' });
 
   useEffect(() => {
     const getData = async () => {
