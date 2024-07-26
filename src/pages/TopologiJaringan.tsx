@@ -1,168 +1,112 @@
-import { useState, useRef, useEffect, Suspense } from 'react';
-import { Canvas } from '@react-three/fiber';
-import Laptop from '../components/Laptop';
-import Popup from '../components/Popup';
-import RotationButton from '../components/RotationButton';
-import ResetButton from '../components/ResetButton';
-import ambilData from '../ambildata';
+import { Suspense, useRef, useState, useEffect } from "react";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import { OrbitControls, useGLTF } from "@react-three/drei";
+import { Vector3, Group } from "three";
+import ChatBox from '../components/ChatBox'; // Import the ChatBox component
+import ambilData from '../ambildata'; // Import the data fetching function
+import "../App.css"
 
-export default function TopologiJaringan() {
-  const [showPopup, setShowPopup] = useState(false);
-  const [popupContent, setPopupContent] = useState('');
-  const [rotation, setRotation] = useState<[number, number, number]>([0, 0, 0]);
-  const [zoom, setZoom] = useState(1);
-  const rotateInterval = useRef<NodeJS.Timeout | null>(null);
-  const [data, setData] = useState({ popup1: '', popup2: '' });
+// Define the component to load and display the GLTF model
+function Model({ path, onClick }: { path: string, onClick: (group: Group) => void }) {
+  const groupRef = useRef<Group>(null);
+  const { scene } = useGLTF(path);
 
+  // Adjust scale based on window size
+  useFrame(({ viewport }: { viewport: { width: number; height: number } }) => {
+    if (groupRef.current) {
+      const scaleFactor = Math.min(viewport.width, viewport.height) / 10;
+      groupRef.current.scale.set(scaleFactor, scaleFactor, scaleFactor);
+    }
+  });
+
+  return <primitive ref={groupRef} object={scene} onClick={() => groupRef.current && onClick(groupRef.current)} />;
+}
+
+function CameraSetup({ targetPosition, zoomIn }: { targetPosition: Vector3 | null, zoomIn: boolean }) {
+  const { camera } = useThree();
+  const controlsRef = useRef<any>(null);
 
   useEffect(() => {
-    const getData = async () => {
-      const fetchedData = await ambilData();
-      setData(fetchedData);
-    };
-    getData();
-  }, []);
+    if (zoomIn && targetPosition && controlsRef.current) {
+      const offset = new Vector3(10, 10, 10); // Adjust this offset for better viewing
+      const newPosition = targetPosition.clone().add(offset);
+      camera.position.copy(newPosition); // Move camera to new position
+      camera.lookAt(targetPosition); // Make the camera look at the target position
+      controlsRef.current.target.copy(targetPosition); // Set OrbitControls target to the target position
+      controlsRef.current.update(); // Update the controls
+    } else if (!zoomIn && controlsRef.current) {
+      camera.position.set(60, 10, 15); // Reset to initial position
+      camera.lookAt(new Vector3(0, 0, 0)); // Adjust to look at the center of the object
+      controlsRef.current.target.set(0, 0, 0); // Reset OrbitControls target
+      controlsRef.current.update(); // Update the controls
+    }
+  }, [zoomIn, targetPosition, camera]);
 
-  const handleButtonClick = (content: string) => {
+  return <OrbitControls ref={controlsRef} enableZoom={!zoomIn} />;
+}
+
+// Define the main component to render the 3D scene
+function TopologiJaringan() {
+  const [modelPath, setModelPath] = useState("/topologi/topologi-bus.glb");
+  const [key, setKey] = useState(0); // Add key to force re-render
+  const [popupContent, setPopupContent] = useState<string>('');
+  const [showPopup, setShowPopup] = useState(false);
+  const [zoomIn, setZoomIn] = useState(false); // Add state for zooming
+  const [targetPosition, setTargetPosition] = useState<Vector3 | null>(null);
+
+  const handleSwitchModel = (path: string) => {
+    setModelPath(path);
+    setKey(key + 1); // Change key to force re-render
+  };
+
+  const handleModelClick = async (group: Group) => {
+    setShowPopup(false); // Ensure popup is hidden before fetching new data
+    const data = await ambilData();
+    const content = modelPath.includes('bus') ? data.popup1 : data.popup2;
     setPopupContent(content);
     setShowPopup(true);
+    setZoomIn(true); // Set zoomIn to true to zoom in
+    setTargetPosition(group.position.clone()); // Set the target position for zooming
   };
 
-  const startRotation = (direction: string) => {
-    if (rotateInterval.current) return;
-
-    rotateInterval.current = setInterval(() => {
-      setRotation(prevRotation => {
-        switch (direction) {
-          case 'up':
-            return [prevRotation[0] + 0.01, prevRotation[1], prevRotation[2]];
-          case 'down':
-            return [prevRotation[0] - 0.01, prevRotation[1], prevRotation[2]];
-          case 'left':
-            return [prevRotation[0], prevRotation[1] + 0.01, prevRotation[2]];
-          case 'right':
-            return [prevRotation[0], prevRotation[1] - 0.01, prevRotation[2]];
-          default:
-            return prevRotation;
-        }
-      });
-    }, 16); // Interval 16ms untuk mendapatkan sekitar 60fps
+  const handleClosePopup = () => {
+    setShowPopup(false);
+    setZoomIn(false); // Set zoomIn to false to reset camera
+    setTargetPosition(null); // Clear the target position
   };
-
-  const stopRotation = () => {
-    if (rotateInterval.current) {
-      clearInterval(rotateInterval.current);
-      rotateInterval.current = null;
-    }
-  };
-
-  const resetRotation = () => {
-    setRotation([0, 0, 0]);
-    setZoom(1);
-  };
-
-  const zoomIn = () => {
-    setZoom(prevZoom => Math.min(prevZoom + 0.1, 2));
-  };
-
-  const zoomOut = () => {
-    setZoom(prevZoom => Math.max(prevZoom - 0.1, 1));
-  };
-
-  useEffect(() => {
-    return () => {
-      if (rotateInterval.current) {
-        clearInterval(rotateInterval.current);
-      }
-    };
-  }, []);
 
   return (
-    <div className="h-screen w-screen flex flex-col items-center justify-center relative">
-      <Canvas className="w-full h-full bg-gray-100" pixelratio={window.devicePixelRatio / 2}>
+    <div className="w-screen h-screen overflow-hidden relative">
+      <Canvas key={key}>
+        <CameraSetup zoomIn={zoomIn} targetPosition={targetPosition} />
+        <ambientLight intensity={0.5} />
+        <pointLight position={[10, 10, 10]} />
         <Suspense fallback={null}>
-          <ambientLight intensity={0.5} />
-          <pointLight position={[10, 10, 10]} />
-          <Laptop rotation={rotation} position={[0, -1, 0]} scale={0.5 * zoom} />
+          <Model 
+            path={modelPath} 
+            onClick={(group) => handleModelClick(group)} 
+          />
         </Suspense>
       </Canvas>
-
-      <div className="absolute w-full h-full pointer-events-none" style={{ top: 0, left: 0 }}>
-        <button 
-          onClick={() => handleButtonClick(data.popup1)}
-          className="bg-blue-500 text-white rounded-full h-8 w-8 flex items-center justify-center m-2 pointer-events-auto"
-          style={{ position: 'absolute', top: '40%', left: '45%' }}
-        >
-          1
-        </button>
-        <button 
-          onClick={() => handleButtonClick(data.popup2)}
-          className="bg-green-500 text-white rounded-full h-8 w-8 flex items-center justify-center m-2 pointer-events-auto"
-          style={{ position: 'absolute', top: '50%', left: '55%' }}
-        >
-          2
-        </button>
-      </div>
-
-      <div className="absolute bottom-20 left-1/2 transform -translate-x-1/2 flex flex-col items-center space-y-2">
-        <div className="flex justify-center">
-          <RotationButton
-            direction="up"
-            onMouseDown={() => startRotation('up')}
-            onMouseUp={stopRotation}
-            onTouchStart={() => startRotation('up')}
-            onTouchEnd={stopRotation}
-          />
+      {!zoomIn && (
+        <div className="absolute top-5 left-5 z-10 flex space-x-2">
+          <button
+            className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:-translate-y-1 active:translate-y-0"
+            onClick={() => handleSwitchModel("/topologi/topologi-bus.glb")}
+          >
+            Topologi Bus
+          </button>
+          <button
+            className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:-translate-y-1 active:translate-y-0"
+            onClick={() => handleSwitchModel("/topologi/topologi-ring.glb")}
+          >
+            Topologi Ring
+          </button>
         </div>
-        <div className="flex justify-center space-x-2">
-          <RotationButton
-            direction="left"
-            onMouseDown={() => startRotation('left')}
-            onMouseUp={stopRotation}
-            onTouchStart={() => startRotation('left')}
-            onTouchEnd={stopRotation}
-          />
-          <RotationButton
-            direction="down"
-            onMouseDown={() => startRotation('down')}
-            onMouseUp={stopRotation}
-            onTouchStart={() => startRotation('down')}
-            onTouchEnd={stopRotation}
-          />
-          <RotationButton
-            direction="right"
-            onMouseDown={() => startRotation('right')}
-            onMouseUp={stopRotation}
-            onTouchStart={() => startRotation('right')}
-            onTouchEnd={stopRotation}
-          />
-        </div>
-      </div>
-
-      <div className="absolute top-10 right-10 flex space-x-2">
-        <ResetButton onClick={resetRotation} />
-        <button
-          onMouseDown={zoomIn}
-          onMouseUp={() => {}}
-          onTouchStart={zoomIn}
-          onTouchEnd={() => {}}
-          className="bg-gray-700 text-white h-12 w-12 rounded-full shadow-lg transition-transform transform hover:scale-110 active:scale-95"
-        >
-          +
-        </button>
-        <button
-          onMouseDown={zoomOut}
-          onMouseUp={() => {}}
-          onTouchStart={zoomOut}
-          onTouchEnd={() => {}}
-          className={`h-12 w-12 rounded-full shadow-lg transition-transform transform ${zoom > 1 ? 'bg-gray-700 text-white hover:scale-110 active:scale-95' : 'bg-gray-300 text-gray-500'}`}
-          disabled={zoom === 1}
-        >
-          -
-        </button>
-      </div>
-
-      <Popup show={showPopup} onClose={() => setShowPopup(false)} content={popupContent} />
+      )}
+      <ChatBox show={showPopup} onClose={handleClosePopup} content={popupContent} />
     </div>
   );
 }
+
+export default TopologiJaringan;

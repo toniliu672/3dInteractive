@@ -11,3 +11,29 @@ body {
 .space-x-4 {
   gap: 1rem;
 }
+
+/* Button CSS */
+.switch-button {
+  background: linear-gradient(145deg, #6fb1fc, #1e78f2);
+  border: none;
+  color: white;
+  padding: 10px 20px;
+  margin: 5px;
+  font-size: 16px;
+  font-weight: bold;
+  border-radius: 8px;
+  box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease-in-out;
+  cursor: pointer;
+  text-transform: uppercase;
+}
+
+.switch-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 6px 6px 15px rgba(0, 0, 0, 0.3);
+}
+
+.switch-button:active {
+  transform: translateY(1px);
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+}

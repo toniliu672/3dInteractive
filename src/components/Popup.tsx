@@ -9,17 +9,17 @@ interface PopupProps {
 export default function Popup({ show, onClose, content }: PopupProps) {
   if (!show) return null;
 
-  // Pastikan konten tidak undefined atau null
+  // Ensure content is not undefined or null
   const validContent = content || "";
 
-  // Pisahkan konten menjadi bagian-bagian yang berbeda berdasarkan garis kosong
+  // Split content into different sections based on empty lines
   const sections = validContent.split('\n\n');
 
-  // Ambil bagian-bagian yang relevan
+  // Extract relevant sections
   const title = sections[0] || "Judul Tidak Ditemukan";
   const description = sections[1] || "";
 
-  // Pisahkan kelebihan dan kekurangan berdasarkan kata kunci
+  // Split advantages and disadvantages based on keywords
   const advantagesSection = sections.find(section => section.startsWith("Kelebihan:"));
   const disadvantagesSection = sections.find(section => section.startsWith("Kekurangan:"));
 
@@ -32,7 +32,7 @@ export default function Popup({ show, onClose, content }: PopupProps) {
     : [];
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
       <div className="bg-white p-6 md:p-8 rounded-lg shadow-lg relative max-w-full md:max-w-2xl max-h-full overflow-y-auto">
         <CloseButton onClick={onClose} />
         <div className="text-justify text-gray-800 mt-8 leading-relaxed">
