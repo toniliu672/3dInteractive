@@ -6,12 +6,12 @@ import ChatBox from '../components/ChatBox'; // Import the ChatBox component
 import ambilData from '../ambildata'; // Import the data fetching function
 import "../App.css"
 
-// Define the component to load and display the GLTF model
+// Komponen untuk memuat dan menampilkan model GLTF
 function Model({ path, onClick }: { path: string, onClick: (group: Group) => void }) {
   const groupRef = useRef<Group>(null);
   const { scene } = useGLTF(path);
 
-  // Adjust scale based on window size
+  // Menyesuaikan skala berdasarkan ukuran jendela
   useFrame(({ viewport }: { viewport: { width: number; height: number } }) => {
     if (groupRef.current) {
       const scaleFactor = Math.min(viewport.width, viewport.height) / 10;
@@ -22,57 +22,65 @@ function Model({ path, onClick }: { path: string, onClick: (group: Group) => voi
   return <primitive ref={groupRef} object={scene} onClick={() => groupRef.current && onClick(groupRef.current)} />;
 }
 
+// Komponen untuk mengatur kamera
 function CameraSetup({ targetPosition, zoomIn }: { targetPosition: Vector3 | null, zoomIn: boolean }) {
   const { camera } = useThree();
   const controlsRef = useRef<any>(null);
 
   useEffect(() => {
     if (zoomIn && targetPosition && controlsRef.current) {
-      const offset = new Vector3(10, 10, 10); // Adjust this offset for better viewing
-      const newPosition = targetPosition.clone().add(offset);
-      camera.position.copy(newPosition); // Move camera to new position
-      camera.lookAt(targetPosition); // Make the camera look at the target position
-      controlsRef.current.target.copy(targetPosition); // Set OrbitControls target to the target position
-      controlsRef.current.update(); // Update the controls
+      camera.position.set(targetPosition.x + 10, targetPosition.y + 10, targetPosition.z + 10);
+      camera.lookAt(targetPosition);
+      controlsRef.current.target.copy(targetPosition);
+      controlsRef.current.update();
     } else if (!zoomIn && controlsRef.current) {
-      camera.position.set(60, 10, 15); // Reset to initial position
-      camera.lookAt(new Vector3(0, 0, 0)); // Adjust to look at the center of the object
-      controlsRef.current.target.set(0, 0, 0); // Reset OrbitControls target
-      controlsRef.current.update(); // Update the controls
+      camera.position.set(60, 10, 15); // Mengatur kembali ke posisi awal
+      camera.lookAt(new Vector3(0, 0, 0)); // Mengatur untuk melihat pusat objek
+      controlsRef.current.target.set(0, 0, 0); // Mengatur kembali target OrbitControls
+      controlsRef.current.update(); // Memperbarui kontrol
     }
   }, [zoomIn, targetPosition, camera]);
 
-  return <OrbitControls ref={controlsRef} enableZoom={!zoomIn} />;
+  return (
+    <OrbitControls
+      ref={controlsRef}
+      enableZoom={!zoomIn}
+      maxPolarAngle={(2 * Math.PI) / 3} // Mengizinkan melihat ke bawah 30 derajat dari horizontal
+      minPolarAngle={Math.PI / 6} // Mengizinkan melihat ke atas 30 derajat dari horizontal
+      maxDistance={100} // Jarak zoom out maksimum
+      minDistance={20} // Jarak zoom in minimum
+    />
+  );
 }
 
-// Define the main component to render the 3D scene
+// Komponen utama untuk merender scene 3D
 function TopologiJaringan() {
   const [modelPath, setModelPath] = useState("/topologi/topologi-bus.glb");
-  const [key, setKey] = useState(0); // Add key to force re-render
+  const [key, setKey] = useState(0); // Menambahkan key untuk memaksa render ulang
   const [popupContent, setPopupContent] = useState<string>('');
   const [showPopup, setShowPopup] = useState(false);
-  const [zoomIn, setZoomIn] = useState(false); // Add state for zooming
+  const [zoomIn, setZoomIn] = useState(false); // Menambahkan state untuk zoom
   const [targetPosition, setTargetPosition] = useState<Vector3 | null>(null);
 
   const handleSwitchModel = (path: string) => {
     setModelPath(path);
-    setKey(key + 1); // Change key to force re-render
+    setKey(key + 1); // Mengubah key untuk memaksa render ulang
   };
 
   const handleModelClick = async (group: Group) => {
-    setShowPopup(false); // Ensure popup is hidden before fetching new data
+    setShowPopup(false); // Memastikan popup tersembunyi sebelum mengambil data baru
     const data = await ambilData();
     const content = modelPath.includes('bus') ? data.popup1 : data.popup2;
     setPopupContent(content);
     setShowPopup(true);
-    setZoomIn(true); // Set zoomIn to true to zoom in
-    setTargetPosition(group.position.clone()); // Set the target position for zooming
+    setZoomIn(true); // Mengatur zoomIn menjadi true untuk zoom in
+    setTargetPosition(group.position.clone()); // Mengatur posisi target untuk zoom
   };
 
   const handleClosePopup = () => {
     setShowPopup(false);
-    setZoomIn(false); // Set zoomIn to false to reset camera
-    setTargetPosition(null); // Clear the target position
+    setZoomIn(false); // Mengatur zoomIn menjadi false untuk reset kamera
+    setTargetPosition(null); // Menghapus posisi target
   };
 
   return (
