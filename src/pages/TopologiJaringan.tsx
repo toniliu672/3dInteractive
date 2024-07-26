@@ -2,6 +2,7 @@ import { Suspense, useRef, useState, useEffect } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { OrbitControls, useGLTF } from "@react-three/drei";
 import { Vector3, Group } from "three";
+import TWEEN from '@tweenjs/tween.js';
 import ChatBox from '../components/ChatBox'; // Import the ChatBox component
 import ambilData from '../ambildata'; // Import the data fetching function
 import "../App.css"
@@ -22,24 +23,44 @@ function Model({ path, onClick }: { path: string, onClick: (group: Group) => voi
   return <primitive ref={groupRef} object={scene} onClick={() => groupRef.current && onClick(groupRef.current)} />;
 }
 
-// Komponen untuk mengatur kamera
+// Komponen untuk mengatur kamera dengan animasi
 function CameraSetup({ targetPosition, zoomIn }: { targetPosition: Vector3 | null, zoomIn: boolean }) {
   const { camera } = useThree();
   const controlsRef = useRef<any>(null);
 
   useEffect(() => {
     if (zoomIn && targetPosition && controlsRef.current) {
-      camera.position.set(targetPosition.x + 10, targetPosition.y + 10, targetPosition.z + 10);
-      camera.lookAt(targetPosition);
-      controlsRef.current.target.copy(targetPosition);
-      controlsRef.current.update();
+      const startPosition = camera.position.clone();
+      const endPosition = targetPosition.clone().add(new Vector3(10, 10, 10));
+      new TWEEN.Tween(startPosition)
+        .to(endPosition, 1000) // Durasi animasi dalam milidetik
+        .easing(TWEEN.Easing.Quadratic.InOut)
+        .onUpdate(() => {
+          camera.position.copy(startPosition);
+          camera.lookAt(targetPosition);
+          controlsRef.current.target.copy(targetPosition);
+          controlsRef.current.update();
+        })
+        .start();
     } else if (!zoomIn && controlsRef.current) {
-      camera.position.set(60, 10, 15); // Mengatur kembali ke posisi awal
-      camera.lookAt(new Vector3(0, 0, 0)); // Mengatur untuk melihat pusat objek
-      controlsRef.current.target.set(0, 0, 0); // Mengatur kembali target OrbitControls
-      controlsRef.current.update(); // Memperbarui kontrol
+      const startPosition = camera.position.clone();
+      const endPosition = new Vector3(60, 10, 15);
+      new TWEEN.Tween(startPosition)
+        .to(endPosition, 1000) // Durasi animasi dalam milidetik
+        .easing(TWEEN.Easing.Quadratic.InOut)
+        .onUpdate(() => {
+          camera.position.copy(startPosition);
+          camera.lookAt(new Vector3(0, 0, 0));
+          controlsRef.current.target.set(0, 0, 0);
+          controlsRef.current.update();
+        })
+        .start();
     }
   }, [zoomIn, targetPosition, camera]);
+
+  useFrame(() => {
+    TWEEN.update();
+  });
 
   return (
     <OrbitControls
