@@ -1,74 +1,253 @@
-import { useState, useRef, Suspense, MutableRefObject } from 'react';
-import { Canvas } from '@react-three/fiber';
-import { OrbitControls, useGLTF } from '@react-three/drei';
-import { Group, Mesh } from 'three';
+import { Suspense, useRef, useState, useEffect, MutableRefObject } from 'react';
+import { Canvas, useFrame, useThree, useLoader } from '@react-three/fiber';
+import { OrbitControls } from '@react-three/drei';
+import { Vector3, Group, Mesh } from 'three';
+import { FBXLoader } from 'three-stdlib';
+import TWEEN from '@tweenjs/tween.js';
+import ChatBoxOSI from '../components/ChatBoxOSI';
+import ambilData from '../ambildata';
+import "../App.css";
 
 interface ClickableModelProps {
   path: string;
+  layerName: string;
+  onClick: (group: Group | null, layerName: string) => void;
+  setZoomIn: React.Dispatch<React.SetStateAction<boolean>>;
+  setTargetPosition: React.Dispatch<React.SetStateAction<Vector3 | null>>;
 }
 
-function ClickableModel({ path }: ClickableModelProps) {
+function ClickableModel({ path, layerName, onClick, setZoomIn, setTargetPosition }: ClickableModelProps) {
   const groupRef = useRef<Group>(null as unknown as Group);
-  const { nodes } = useGLTF(path);
+  const scene = useLoader(FBXLoader, path);
   const [selectedObject, setSelectedObject] = useState<Mesh | null>(null);
 
   const handleObjectClick = (e: any) => {
     e.stopPropagation();
     const object = e.object as Mesh;
-
-    // Reset the previously selected object
-    if (selectedObject && selectedObject !== object) {
-      selectedObject.position.set(...(selectedObject.userData.originalPosition as [number, number, number]));
-      selectedObject.rotation.set(...(selectedObject.userData.originalRotation as [number, number, number]));
-    }
-
-    // Toggle the selected object
+  
     if (selectedObject === object) {
+      resetObject(object);
       setSelectedObject(null);
-      object.position.set(...(object.userData.originalPosition as [number, number, number]));
-      object.rotation.set(...(object.userData.originalRotation as [number, number, number]));
+      setZoomIn(false);
+      setTargetPosition(null);
+      onClick(null, layerName);
     } else {
-      // Save the original position and rotation
       if (!object.userData.originalPosition) {
-        object.userData.originalPosition = [object.position.x, object.position.y, object.position.z];
-        object.userData.originalRotation = [object.rotation.x, object.rotation.y, object.rotation.z];
+        object.userData.originalPosition = object.position.clone();
+        object.userData.originalRotation = object.rotation.clone();
       }
-
-      // Move and rotate the selected object forward
-      object.translateZ(3); // Adjust this value to control how far the object moves forward
-      object.rotation.y = Math.PI / -3; // 60 degrees in radians
-
+  
+      object.translateX(60);
+  
       setSelectedObject(object);
+      setZoomIn(true);
+      setTargetPosition(object.position.clone());
+      onClick(groupRef.current!, layerName);
     }
   };
+  
+  const resetObject = (object: Mesh) => {
+    if (object.userData.originalPosition) {
+      object.position.copy(object.userData.originalPosition);
+    }
+    if (object.userData.originalRotation) {
+      object.rotation.copy(object.userData.originalRotation);
+    }
+  };
+  
 
+  
   return (
-    <group ref={groupRef as MutableRefObject<Group>} onPointerDown={handleObjectClick}>
-      {Object.keys(nodes).map((key) => (
-        <mesh key={key} geometry={nodes[key].geometry} position={nodes[key].position}>
-          <meshStandardMaterial attach="material" />
-        </mesh>
-      ))}
+    <group ref={groupRef as MutableRefObject<Group>} onPointerDown={handleObjectClick} name={layerName}>
+      <primitive object={scene} />
     </group>
   );
 }
 
-function OSILayer() {
+function CameraSetup({ targetPosition, zoomIn }: { targetPosition: Vector3 | null, zoomIn: boolean }) {
+  const { camera } = useThree();
+  const controlsRef = useRef<any>(null);
+
+  useEffect(() => {
+    if (zoomIn && targetPosition && controlsRef.current) {
+      const startPosition = camera.position.clone();
+      const endPosition = targetPosition.clone().add(new Vector3(10, 10, 10));
+      new TWEEN.Tween(startPosition)
+        .to(endPosition, 1000)
+        .easing(TWEEN.Easing.Quadratic.InOut)
+        .onUpdate(() => {
+          camera.position.copy(startPosition);
+          camera.lookAt(targetPosition);
+          controlsRef.current.target.copy(targetPosition);
+          controlsRef.current.update();
+        })
+        .start();
+    } else if (!zoomIn && controlsRef.current) {
+      const startPosition = camera.position.clone();
+      const endPosition = new Vector3(0, 2, 5);
+      new TWEEN.Tween(startPosition)
+        .to(endPosition, 1000)
+        .easing(TWEEN.Easing.Quadratic.InOut)
+        .onUpdate(() => {
+          camera.position.copy(startPosition);
+          camera.lookAt(new Vector3(0, 0, 0));
+          controlsRef.current.target.set(0, 0, 0);
+          controlsRef.current.update();
+        })
+        .start();
+    }
+  }, [zoomIn, targetPosition, camera]);
+
+  useFrame(() => {
+    TWEEN.update();
+  });
+
   return (
-    <div style={{ width: '100vw', height: '100vh', overflow: 'hidden' }}>
-      <Canvas camera={{ position: [0, 2, 5], fov: 50 }}>
+    <OrbitControls
+      ref={controlsRef}
+      enableZoom={!zoomIn}
+      maxPolarAngle={Math.PI / 2}
+      minPolarAngle={0}
+      maxDistance={800}
+      minDistance={700}
+    />
+  );
+}
+
+function OSILayer() {
+  const [popupContent, setPopupContent] = useState<{ title: string, description: string }>({ title: '', description: '' });
+  const [showPopup, setShowPopup] = useState(false);
+  const [zoomIn, setZoomIn] = useState(false);
+  const [targetPosition, setTargetPosition] = useState<Vector3 | null>(null);
+  const [osiData, setOsiData] = useState<any>(null);
+  const [selectedObject, setSelectedObject] = useState<Mesh | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const data = await ambilData();
+      console.log("Data fetched from Google Sheets:", data);
+      setOsiData(data);
+    };
+    fetchData();
+  }, []);
+
+  const resetObject = (object: Mesh) => {
+    if (object.userData.originalPosition) {
+      object.position.copy(object.userData.originalPosition);
+    }
+    if (object.userData.originalRotation) {
+      object.rotation.copy(object.userData.originalRotation);
+    }
+  };
+
+  const handleModelClick = (group: Group | null, layerName: string) => {
+    if (group === null) {
+      handleClosePopup();
+      return;
+    }
+
+    if (!osiData) {
+      console.error("OSI data not loaded yet");
+      return;
+    }
+
+    if (selectedObject) {
+      resetObject(selectedObject);
+    }
+
+    const content = osiData[layerName];
+    if (content) {
+      console.log("Content for popup:", content);
+      setPopupContent(content);
+      setShowPopup(true);
+      setZoomIn(true);
+      setTargetPosition(group.position.clone());
+      const mesh = group.children[0] as Mesh;
+      setSelectedObject(mesh);
+      if (!mesh.userData.originalPosition) {
+        mesh.userData.originalPosition = mesh.position.clone();
+        mesh.userData.originalRotation = mesh.rotation.clone();
+      }
+      mesh.translateX(60);
+    } else {
+      console.error(`Content not found for layer: ${layerName}`);
+    }
+  };
+
+  const handleClosePopup = () => {
+    if (selectedObject) {
+      resetObject(selectedObject);
+      setSelectedObject(null);
+    }
+
+    setShowPopup(false);
+    setZoomIn(false);
+    setTargetPosition(null);
+  };
+
+  return (
+    <div className="w-screen h-screen overflow-hidden relative">
+      <Canvas>
+        <CameraSetup zoomIn={zoomIn} targetPosition={targetPosition} />
         <ambientLight intensity={0.5} />
         <pointLight position={[10, 10, 10]} />
         <Suspense fallback={null}>
-          <ClickableModel path="/osi/osi-layer.glb" />
+          <ClickableModel 
+            path="/osi/layer1.fbx" 
+            layerName="physicalLayer"
+            onClick={handleModelClick} 
+            setZoomIn={setZoomIn}
+            setTargetPosition={setTargetPosition}
+          />
+          <ClickableModel 
+            path="/osi/layer2.fbx" 
+            layerName="dataLinkLayer"
+            onClick={handleModelClick} 
+            setZoomIn={setZoomIn}
+            setTargetPosition={setTargetPosition}
+          />
+          <ClickableModel 
+            path="/osi/layer3.fbx" 
+            layerName="networkLayer"
+            onClick={handleModelClick} 
+            setZoomIn={setZoomIn}
+            setTargetPosition={setTargetPosition}
+          />
+          <ClickableModel 
+            path="/osi/layer4.fbx" 
+            layerName="transportLayer"
+            onClick={handleModelClick} 
+            setZoomIn={setZoomIn}
+            setTargetPosition={setTargetPosition}
+          />
+          <ClickableModel 
+            path="/osi/layer5.fbx" 
+            layerName="sessionLayer"
+            onClick={handleModelClick} 
+            setZoomIn={setZoomIn}
+            setTargetPosition={setTargetPosition}
+          />
+          <ClickableModel 
+            path="/osi/layer6.fbx" 
+            layerName="presentationLayer"
+            onClick={handleModelClick} 
+            setZoomIn={setZoomIn}
+            setTargetPosition={setTargetPosition}
+          />
+          <ClickableModel 
+            path="/osi/layer7.fbx" 
+            layerName="applicationLayer"
+            onClick={handleModelClick} 
+            setZoomIn={setZoomIn}
+            setTargetPosition={setTargetPosition}
+          />
         </Suspense>
-        <OrbitControls 
-          maxPolarAngle={Math.PI / 2} // Limit vertical rotation
-          minPolarAngle={0} // Limit vertical rotation
-          maxDistance={14} // Maximum zoom out distance
-          minDistance={7} // Minimum zoom in distance
-        />
       </Canvas>
+      {showPopup && (
+        <div className="absolute top-10 right-10 z-10">
+          <ChatBoxOSI show={showPopup} onClose={handleClosePopup} content={popupContent} />
+        </div>
+      )}
     </div>
   );
 }
