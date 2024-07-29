@@ -24,7 +24,7 @@ function ClickableModel({ path, layerName, onClick, setZoomIn, setTargetPosition
   const handleObjectClick = (e: any) => {
     e.stopPropagation();
     const object = e.object as Mesh;
-  
+
     if (selectedObject === object) {
       resetObject(object);
       setSelectedObject(null);
@@ -36,16 +36,16 @@ function ClickableModel({ path, layerName, onClick, setZoomIn, setTargetPosition
         object.userData.originalPosition = object.position.clone();
         object.userData.originalRotation = object.rotation.clone();
       }
-  
+
       object.translateX(60);
-  
+
       setSelectedObject(object);
       setZoomIn(true);
       setTargetPosition(object.position.clone());
       onClick(groupRef.current!, layerName);
     }
   };
-  
+
   const resetObject = (object: Mesh) => {
     if (object.userData.originalPosition) {
       object.position.copy(object.userData.originalPosition);
@@ -54,9 +54,7 @@ function ClickableModel({ path, layerName, onClick, setZoomIn, setTargetPosition
       object.rotation.copy(object.userData.originalRotation);
     }
   };
-  
 
-  
   return (
     <group ref={groupRef as MutableRefObject<Group>} onPointerDown={handleObjectClick} name={layerName}>
       <primitive object={scene} />
@@ -125,7 +123,6 @@ function OSILayer() {
   useEffect(() => {
     const fetchData = async () => {
       const data = await ambilData();
-      console.log("Data fetched from Google Sheets:", data);
       setOsiData(data);
     };
     fetchData();
@@ -157,7 +154,6 @@ function OSILayer() {
 
     const content = osiData[layerName];
     if (content) {
-      console.log("Content for popup:", content);
       setPopupContent(content);
       setShowPopup(true);
       setZoomIn(true);
@@ -186,8 +182,8 @@ function OSILayer() {
   };
 
   return (
-    <div className="w-screen h-screen overflow-hidden relative">
-      <Canvas>
+    <div className="w-screen h-screen overflow-hidden relative flex flex-col">
+      <Canvas className="flex-grow">
         <CameraSetup zoomIn={zoomIn} targetPosition={targetPosition} />
         <ambientLight intensity={0.5} />
         <pointLight position={[10, 10, 10]} />
@@ -244,10 +240,28 @@ function OSILayer() {
         </Suspense>
       </Canvas>
       {showPopup && (
-        <div className="absolute top-10 right-10 z-10">
-          <ChatBoxOSI show={showPopup} onClose={handleClosePopup} content={popupContent} />
-        </div>
+        <ChatBoxOSI show={showPopup} onClose={handleClosePopup} content={popupContent} />
       )}
+      <div className="block md:hidden w-full p-4 bg-gray-100 text-center">
+        <div className="text-lg">
+          <p className='text-red-500'>Layer 7: Application</p>
+          <p className='text-red-500'>Layer 6: Presentation</p>
+          <p className='text-red-500'>Layer 5: Session</p>
+          <p>Layer 4: Transport</p>
+          <p>Layer 3: Network</p>
+          <p>Layer 2: Data Link</p>
+          <p>Layer 1: Physical</p>
+        </div>
+      </div>
+      <div className="hidden md:block absolute top-1/2 right-10 transform -translate-y-1/2 text-lg text-left">
+        <p className='text-red-500'>Layer 7: Application</p>
+        <p className='text-red-500'>Layer 6: Presentation</p>
+        <p className='text-red-500'>Layer 5: Session</p>
+        <p>Layer 4: Transport</p>
+        <p>Layer 3: Network</p>
+        <p>Layer 2: Data Link</p>
+        <p>Layer 1: Physical</p>
+      </div>
     </div>
   );
 }
