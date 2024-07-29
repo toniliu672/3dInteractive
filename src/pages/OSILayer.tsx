@@ -6,6 +6,7 @@ import { FBXLoader } from 'three-stdlib';
 import TWEEN from '@tweenjs/tween.js';
 import ChatBoxOSI from '../components/ChatBoxOSI';
 import ambilData from '../ambildata';
+import Background from '../components/Background'; // Import Background component
 import "../App.css";
 
 interface ClickableModelProps {
@@ -182,67 +183,70 @@ function OSILayer() {
   };
 
   return (
-    <div className="w-screen h-screen overflow-hidden relative flex flex-col">
-      <Canvas className="flex-grow">
-        <CameraSetup zoomIn={zoomIn} targetPosition={targetPosition} />
-        <ambientLight intensity={0.5} />
-        <pointLight position={[10, 10, 10]} />
-        <Suspense fallback={null}>
-          <ClickableModel 
-            path="/osi/layer1.fbx" 
-            layerName="physicalLayer"
-            onClick={handleModelClick} 
-            setZoomIn={setZoomIn}
-            setTargetPosition={setTargetPosition}
-          />
-          <ClickableModel 
-            path="/osi/layer2.fbx" 
-            layerName="dataLinkLayer"
-            onClick={handleModelClick} 
-            setZoomIn={setZoomIn}
-            setTargetPosition={setTargetPosition}
-          />
-          <ClickableModel 
-            path="/osi/layer3.fbx" 
-            layerName="networkLayer"
-            onClick={handleModelClick} 
-            setZoomIn={setZoomIn}
-            setTargetPosition={setTargetPosition}
-          />
-          <ClickableModel 
-            path="/osi/layer4.fbx" 
-            layerName="transportLayer"
-            onClick={handleModelClick} 
-            setZoomIn={setZoomIn}
-            setTargetPosition={setTargetPosition}
-          />
-          <ClickableModel 
-            path="/osi/layer5.fbx" 
-            layerName="sessionLayer"
-            onClick={handleModelClick} 
-            setZoomIn={setZoomIn}
-            setTargetPosition={setTargetPosition}
-          />
-          <ClickableModel 
-            path="/osi/layer6.fbx" 
-            layerName="presentationLayer"
-            onClick={handleModelClick} 
-            setZoomIn={setZoomIn}
-            setTargetPosition={setTargetPosition}
-          />
-          <ClickableModel 
-            path="/osi/layer7.fbx" 
-            layerName="applicationLayer"
-            onClick={handleModelClick} 
-            setZoomIn={setZoomIn}
-            setTargetPosition={setTargetPosition}
-          />
-        </Suspense>
-      </Canvas>
+    <div className="relative w-screen h-screen overflow-hidden">
+      <Background />
+      <div className="absolute top-0 left-0 w-full h-full z-10">
+        <Canvas className="flex-grow">
+          <CameraSetup zoomIn={zoomIn} targetPosition={targetPosition} />
+          <ambientLight intensity={0.5} />
+          <pointLight position={[10, 10, 10]} />
+          <Suspense fallback={null}>
+            <ClickableModel 
+              path="/osi/layer1.fbx" 
+              layerName="physicalLayer"
+              onClick={handleModelClick} 
+              setZoomIn={setZoomIn}
+              setTargetPosition={setTargetPosition}
+            />
+            <ClickableModel 
+              path="/osi/layer2.fbx" 
+              layerName="dataLinkLayer"
+              onClick={handleModelClick} 
+              setZoomIn={setZoomIn}
+              setTargetPosition={setTargetPosition}
+            />
+            <ClickableModel 
+              path="/osi/layer3.fbx" 
+              layerName="networkLayer"
+              onClick={handleModelClick} 
+              setZoomIn={setZoomIn}
+              setTargetPosition={setTargetPosition}
+            />
+            <ClickableModel 
+              path="/osi/layer4.fbx" 
+              layerName="transportLayer"
+              onClick={handleModelClick} 
+              setZoomIn={setZoomIn}
+              setTargetPosition={setTargetPosition}
+            />
+            <ClickableModel 
+              path="/osi/layer5.fbx" 
+              layerName="sessionLayer"
+              onClick={handleModelClick} 
+              setZoomIn={setZoomIn}
+              setTargetPosition={setTargetPosition}
+            />
+            <ClickableModel 
+              path="/osi/layer6.fbx" 
+              layerName="presentationLayer"
+              onClick={handleModelClick} 
+              setZoomIn={setZoomIn}
+              setTargetPosition={setTargetPosition}
+            />
+            <ClickableModel 
+              path="/osi/layer7.fbx" 
+              layerName="applicationLayer"
+              onClick={handleModelClick} 
+              setZoomIn={setZoomIn}
+              setTargetPosition={setTargetPosition}
+            />
+          </Suspense>
+        </Canvas>
+      </div>
       {showPopup && (
         <ChatBoxOSI show={showPopup} onClose={handleClosePopup} content={popupContent} />
       )}
-      <div className="block md:hidden w-full p-4 bg-gray-100 text-center">
+      <div className="block md:hidden w-full p-4 bg-gray-100 text-center z-20">
         <div className="text-lg">
           <p className='text-red-500'>Layer 7: Application</p>
           <p className='text-red-500'>Layer 6: Presentation</p>
@@ -253,7 +257,7 @@ function OSILayer() {
           <p>Layer 1: Physical</p>
         </div>
       </div>
-      <div className="hidden md:block absolute top-1/2 right-10 transform -translate-y-1/2 text-lg text-left">
+      <div className="hidden md:block absolute top-1/2 right-10 transform -translate-y-1/2 text-lg text-left z-20">
         <p className='text-red-500'>Layer 7: Application</p>
         <p className='text-red-500'>Layer 6: Presentation</p>
         <p className='text-red-500'>Layer 5: Session</p>
