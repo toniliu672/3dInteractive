@@ -21,6 +21,15 @@ const ambilData = async () => {
     }
     const osiData = await osiResponse.json();
 
+    // Fetch network model descriptions
+    const networkModelsResponse = await fetch(
+      `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/Sheet1!B14:B16?key=${apiKey}`
+    );
+    if (!networkModelsResponse.ok) {
+      throw new Error('Network response was not ok');
+    }
+    const networkModelsData = await networkModelsResponse.json();
+
     console.log("Fetched data:", {
       popup1: popupData.values[0][0],
       popup2: popupData.values[0][1],
@@ -51,6 +60,11 @@ const ambilData = async () => {
       applicationLayer: {
         title: osiData.values[6][0],
         description: osiData.values[6][1],
+      },
+      networkModels: {
+        basicNetwork: networkModelsData.values[0][0],
+        hubNetwork: networkModelsData.values[1][0],
+        routerNetwork: networkModelsData.values[2][0],
       },
     });
 
@@ -85,6 +99,11 @@ const ambilData = async () => {
         title: osiData.values[6][0],
         description: osiData.values[6][1],
       },
+      networkModels: {
+        basicNetwork: networkModelsData.values[0][0],
+        hubNetwork: networkModelsData.values[1][0],
+        routerNetwork: networkModelsData.values[2][0],
+      },
     };
   } catch (error) {
     console.error('Error fetching data from Google Sheets', error);
@@ -118,6 +137,11 @@ const ambilData = async () => {
       applicationLayer: {
         title: 'Error fetching data',
         description: 'Error fetching data',
+      },
+      networkModels: {
+        basicNetwork: 'Error fetching data',
+        hubNetwork: 'Error fetching data',
+        routerNetwork: 'Error fetching data',
       },
     };
   }

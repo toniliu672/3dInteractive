@@ -1,3 +1,4 @@
+// components/Background.tsx
 import React, { useRef, useEffect } from 'react';
 import './Background.css';
 
@@ -6,6 +7,10 @@ const Background: React.FC = () => {
 
   useEffect(() => {
     const canvas = canvasRef.current;
+    if (canvas) {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
     const ctx = canvas!.getContext('2d');
     const width = canvas!.width;
     const height = canvas!.height;
@@ -54,6 +59,19 @@ const Background: React.FC = () => {
     };
 
     animate();
+
+    const handleResize = () => {
+      if (canvas) {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        ctx!.clearRect(0, 0, width, height);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
   }, []);
 
   return <canvas ref={canvasRef} className="background-canvas" />;
