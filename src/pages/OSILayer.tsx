@@ -246,7 +246,7 @@ function OSILayer() {
       {showPopup && (
         <ChatBoxOSI show={showPopup} onClose={handleClosePopup} content={popupContent} />
       )}
-      <div className="block md:hidden w-full p-4 bg-gray-100 text-center z-20">
+      <div className="md:hidden absolute bottom-0 left-0 w-full p-4 bg-gray-100 text-center z-20">
         <div className="text-lg">
           <p className='text-red-500'>Layer 7: Application</p>
           <p className='text-red-500'>Layer 6: Presentation</p>
