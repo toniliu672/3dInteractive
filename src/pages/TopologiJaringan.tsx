@@ -140,7 +140,7 @@ function TopologiJaringan() {
       )}
       <ChatBox show={showPopup} onClose={handleClosePopup} content={popupContent} />
       <button
-        className="absolute bottom-10 left-1/2 transform -translate-x-1/2 bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded-lg shadow-md z-10"
+        className="absolute bottom-28 left-1/2 transform -translate-x-1/2 bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded-lg shadow-md z-10"
         onClick={() => handleModelClick(null)} // Trigger the popup without clicking on the model
       >
         Show Info
