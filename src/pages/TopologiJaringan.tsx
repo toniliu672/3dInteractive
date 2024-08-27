@@ -88,14 +88,19 @@ function TopologiJaringan() {
     setKey(key + 1); // Mengubah key untuk memaksa render ulang
   };
 
-  const handleModelClick = async (group: Group) => {
+  const handleModelClick = async (group: Group | null) => {
     setShowPopup(false); // Memastikan popup tersembunyi sebelum mengambil data baru
     const data = await ambilData();
     const content = modelPath.includes('bus') ? data.popup1 : data.popup2;
     setPopupContent(content);
     setShowPopup(true);
     setZoomIn(true); // Mengatur zoomIn menjadi true untuk zoom in
-    setTargetPosition(group.position.clone()); // Mengatur posisi target untuk zoom
+
+    if (group) {
+      setTargetPosition(group.position.clone()); // Mengatur posisi target untuk zoom
+    } else {
+      setTargetPosition(new Vector3(0, 0, 0)); // Default target position if no group is clicked
+    }
   };
 
   const handleClosePopup = () => {
@@ -134,6 +139,12 @@ function TopologiJaringan() {
         </div>
       )}
       <ChatBox show={showPopup} onClose={handleClosePopup} content={popupContent} />
+      <button
+        className="absolute bottom-10 left-1/2 transform -translate-x-1/2 bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded-lg shadow-md z-10"
+        onClick={() => handleModelClick(null)} // Trigger the popup without clicking on the model
+      >
+        Show Info
+      </button>
     </div>
   );
 }
