@@ -105,13 +105,19 @@ function CameraSetup({ targetPosition, zoomIn }: { targetPosition: Vector3 | nul
     <OrbitControls
       ref={controlsRef}
       enableZoom={!zoomIn}
-      maxPolarAngle={Math.PI / 2}
-      minPolarAngle={0}
-      maxDistance={800}
-      minDistance={700}
+      maxPolarAngle={Math.PI / 2}  // Batasi rotasi vertikal
+      minPolarAngle={Math.PI / 4}  // Sesuaikan dengan kebutuhan
+      maxAzimuthAngle={Math.PI / 4}  // Batasi rotasi horizontal
+      minAzimuthAngle={-Math.PI / 4}  // Sesuaikan dengan kebutuhan
+      maxDistance={900}  // Batasi zoom maksimum
+      minDistance={800}  // Batasi zoom minimum
+      enablePan={false}  // Matikan kemampuan pan
     />
   );
 }
+
+
+
 
 function OSILayer() {
   const [popupContent, setPopupContent] = useState<{ title: string, description: string }>({ title: '', description: '' });
@@ -182,8 +188,25 @@ function OSILayer() {
     setTargetPosition(null);
   };
 
+  useEffect(() => {
+    const handleContextMenu = (event: MouseEvent) => {
+      if (event.button === 2) { // Right click
+        event.preventDefault();
+      }
+    };
+  
+    // Add event listener for right-click
+    window.addEventListener('contextmenu', handleContextMenu);
+  
+    // Clean up the event listener
+    return () => {
+      window.removeEventListener('contextmenu', handleContextMenu);
+    };
+  }, []);
+  
+
   return (
-    <div className="relative w-screen h-screen overflow-hidden">
+    <div className="relative w-screen h-screen overflow-hidden ">
       <Background />
       <div className="absolute top-0 left-0 w-full h-full z-10">
         <Canvas className="flex-grow">
@@ -246,7 +269,8 @@ function OSILayer() {
       {showPopup && (
         <ChatBoxOSI show={showPopup} onClose={handleClosePopup} content={popupContent} />
       )}
-      <div className="md:hidden absolute bottom-0 left-0 w-full p-4 bg-gray-100 text-center z-20" style={{ minHeight: '100px', maxHeight: '200px', overflowY: 'auto' }}>
+      {/* Tampilan Mobile */}
+      <div className="md:hidden hidden absolute bottom-0 left-0 w-full p-4 bg-gray-100 text-center z-20 pb-10" style={{ minHeight: '100px', maxHeight: '200px', overflowY: 'auto' }}>
         <div className="text-lg">
           <p className='text-red-500'>Layer 7: Application</p>
           <p className='text-red-500'>Layer 6: Presentation</p>
@@ -257,6 +281,7 @@ function OSILayer() {
           <p>Layer 1: Physical</p>
         </div>
       </div>
+      {/* Tampilan Dekstop */}
       <div className="hidden md:block absolute top-1/2 right-10 transform -translate-y-1/2 text-lg text-left z-20">
         <p className='text-red-500'>Layer 7: Application</p>
         <p className='text-red-500'>Layer 6: Presentation</p>
