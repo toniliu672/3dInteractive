@@ -1,12 +1,9 @@
-// pages/TransmisiJaringan.tsx
-import React, { useRef, useEffect, useState } from 'react';
-import * as THREE from 'three';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-// import { FontLoader } from 'three/examples/jsm/loaders/FontLoader.js';
-// import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry.js';
-import Button from '../components/Button';
-import TextBox from '../components/TextBox';
-import ambildata from '../ambildata';
+import React, { useRef, useEffect, useState } from "react";
+import * as THREE from "three";
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+import Button from "../components/Button";
+import TextBox from "../components/TextBox";
+import ambildata from "../ambildata";
 
 type Line = [THREE.Vector3, THREE.Vector3];
 
@@ -14,11 +11,11 @@ const TransmisiJaringan: React.FC = () => {
   const mountRef = useRef<HTMLDivElement>(null);
   const [currentModel, setCurrentModel] = useState(1);
   const [modelDescriptions, setModelDescriptions] = useState({
-    basicNetwork: '',
-    hubNetwork: '',
-    routerNetwork: '',
+    basicNetwork: "",
+    hubNetwork: "",
+    routerNetwork: "",
   });
-  const [currentDescription, setCurrentDescription] = useState('');
+  const [currentDescription, setCurrentDescription] = useState("");
   const [showTextBox, setShowTextBox] = useState(false);
 
   useEffect(() => {
@@ -36,7 +33,12 @@ const TransmisiJaringan: React.FC = () => {
 
   useEffect(() => {
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const camera = new THREE.PerspectiveCamera(
+      75,
+      window.innerWidth / window.innerHeight,
+      0.1,
+      1000
+    );
     const renderer = new THREE.WebGLRenderer({ antialias: true });
 
     renderer.setSize(window.innerWidth, window.innerHeight);
@@ -67,7 +69,7 @@ const TransmisiJaringan: React.FC = () => {
       const t = (progress * 4) % 1;
       const lines: Line[] = currentSceneModel.userData.lines;
       const [start, end] = lines[currentLine];
-      
+
       dataSphere.position.lerpVectors(start, end, t);
 
       progress += 0.01;
@@ -84,30 +86,29 @@ const TransmisiJaringan: React.FC = () => {
       camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight);
     };
-    window.addEventListener('resize', onWindowResize);
+    window.addEventListener("resize", onWindowResize);
 
     // Clean up on unmount
     return () => {
       mountRef.current?.removeChild(renderer.domElement);
-      window.removeEventListener('resize', onWindowResize);
+      window.removeEventListener("resize", onWindowResize);
     };
   }, [currentModel]);
 
   const handleModelChange = (modelIndex: number) => {
     setCurrentModel(modelIndex);
-    switch (modelIndex) {
-      case 1:
-        setCurrentDescription(modelDescriptions.basicNetwork);
-        break;
-      case 2:
-        setCurrentDescription(modelDescriptions.hubNetwork);
-        break;
-      case 3:
-        setCurrentDescription(modelDescriptions.routerNetwork);
-        break;
-      default:
-        setCurrentDescription('');
-    }
+  };
+
+  const handleShowPopup = () => {
+    setCurrentDescription(
+      modelDescriptions[
+        currentModel === 1
+          ? "basicNetwork"
+          : currentModel === 2
+          ? "hubNetwork"
+          : "routerNetwork"
+      ]
+    );
     setShowTextBox(true);
   };
 
@@ -126,10 +127,10 @@ const TransmisiJaringan: React.FC = () => {
       new THREE.Vector3(-3, 0, 0),
       new THREE.Vector3(0, 3, 0),
       new THREE.Vector3(3, 0, 0),
-      new THREE.Vector3(0, -3, 0)
+      new THREE.Vector3(0, -3, 0),
     ];
 
-    nodePositions.forEach(position => {
+    nodePositions.forEach((position) => {
       const node = new THREE.Mesh(nodeGeometry, nodeMaterial);
       node.position.copy(position);
       group.add(node);
@@ -142,7 +143,7 @@ const TransmisiJaringan: React.FC = () => {
       [nodePositions[0], nodePositions[1]],
       [nodePositions[1], nodePositions[2]],
       [nodePositions[2], nodePositions[3]],
-      [nodePositions[3], nodePositions[0]]
+      [nodePositions[3], nodePositions[0]],
     ];
 
     lines.forEach(([start, end]) => {
@@ -172,12 +173,12 @@ const TransmisiJaringan: React.FC = () => {
       new THREE.Vector3(-3, 0, 0),
       new THREE.Vector3(3, 0, 0),
       new THREE.Vector3(0, 3, 0),
-      new THREE.Vector3(0, -3, 0)
+      new THREE.Vector3(0, -3, 0),
     ];
 
     const lines: Line[] = [];
 
-    nodePositions.forEach(position => {
+    nodePositions.forEach((position) => {
       const node = new THREE.Mesh(nodeGeometry, nodeMaterial);
       node.position.copy(position);
       group.add(node);
@@ -214,12 +215,12 @@ const TransmisiJaringan: React.FC = () => {
       new THREE.Vector3(-3, 0, 0),
       new THREE.Vector3(3, 0, 0),
       new THREE.Vector3(0, 3, 0),
-      new THREE.Vector3(0, -3, 0)
+      new THREE.Vector3(0, -3, 0),
     ];
 
     const lines: Line[] = [];
 
-    nodePositions.forEach(position => {
+    nodePositions.forEach((position) => {
       const node = new THREE.Mesh(nodeGeometry, nodeMaterial);
       node.position.copy(position);
       group.add(node);
@@ -245,10 +246,18 @@ const TransmisiJaringan: React.FC = () => {
       {showTextBox && (
         <TextBox text={currentDescription} onClose={handleCloseTextBox} />
       )}
-      <div className="absolute top-4 left-1/2 transform -translate-x-1/2 text-white text-2xl lg:text-4xl">
+      <div className="absolute top-4 left-1/2 transform -translate-x-1/2 text-white text-2xl lg:text-4xl text-center">
         {currentModel === 1 && "Model 1: Basic Network"}
         {currentModel === 2 && "Model 2: Hub Network"}
         {currentModel === 3 && "Model 3: Router Network"}
+        <div className="mt-2">
+          <button
+            className="bg-orange-300 hover:bg-orange-600 text-sm font-medium py-2 px-6 rounded-lg shadow-lg transition-transform transform hover:-translate-y-1 active:translate-y-0"
+            onClick={() => setShowTextBox(true)}
+          >
+            Show Description
+          </button>{" "}
+        </div>
       </div>
       <div className="text-center mt-4">
         <Button onClick={() => handleModelChange(1)}>Model 1</Button>
