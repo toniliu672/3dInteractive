@@ -253,7 +253,8 @@ const TransmisiJaringan: React.FC = () => {
         <div className="mt-2">
           <button
             className="bg-orange-300 hover:bg-orange-600 text-sm font-medium py-2 px-6 rounded-lg shadow-lg transition-transform transform hover:-translate-y-1 active:translate-y-0"
-            onClick={() => setShowTextBox(true)}
+            
+            onClick={handleShowPopup}
           >
             Show Description
           </button>{" "}
