@@ -18,7 +18,7 @@ const TextBox: React.FC<TextBoxProps> = ({ text, onClose }) => {
           ✕
         </button>
         <div className="overflow-y-auto max-h-48 text-white">
-          <p>{text}</p>
+          <p className='text-xl'>{text}</p>
         </div>
       </div>
     </div>

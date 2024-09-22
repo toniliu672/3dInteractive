@@ -25,14 +25,14 @@ const ChatBoxOSI: React.FC<ChatBoxOSIProps> = ({ show, onClose, content }) => {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 20 }}
           transition={{ duration: 0.3 }}
-          className="fixed bottom-0 left-0 w-full h-1/2 md:top-4 md:right-4 md:w-80 md:max-w-full md:max-h-[50vh] bg-white rounded-t-lg md:rounded-lg shadow-lg overflow-hidden z-50"
+          className="fixed bottom-0 left-0 w-full h-1/2 md:top-4 md:right-4 md:w-80 md:max-w-full md:max-h-[50vh] bg-white rounded-t-lg md:rounded-lg shadow-lg overflow-x-hidden z-50"
         >
           <motion.div
             className="bg-gray-100 p-4 flex justify-between items-center"
             initial={{ y: -20 }}
             animate={{ y: 0 }}
           >
-            <h3 className="text-lg font-semibold text-gray-800">{localContent.title}</h3>
+            <h3 className="text-3xl font-bold text-gray-800">{localContent.title}</h3>
             <CloseButton onClick={onClose} />
           </motion.div>
 
@@ -44,7 +44,7 @@ const ChatBoxOSI: React.FC<ChatBoxOSIProps> = ({ show, onClose, content }) => {
             transition={{ delay: 0.2 }}
           >
             <motion.p
-              className="text-justify text-gray-800 leading-relaxed"
+              className=" text-gray-800 leading-relaxed text-xl"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}

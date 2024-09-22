@@ -246,14 +246,31 @@ const TransmisiJaringan: React.FC = () => {
       {showTextBox && (
         <TextBox text={currentDescription} onClose={handleCloseTextBox} />
       )}
-      <div className="absolute top-4 left-1/2 transform -translate-x-1/2 text-white text-2xl lg:text-4xl text-center">
-        {currentModel === 1 && "Model 1: Basic Network"}
-        {currentModel === 2 && "Model 2: Hub Network"}
-        {currentModel === 3 && "Model 3: Router Network"}
+      <div className="absolute top-4 left-1/2 transform -translate-x-1/2 text-white text-2xl lg:text-4xl font-bold text-center">
+        {currentModel === 1 && (
+          <>
+            Model 1:
+            <br />
+            Basic Network
+          </>
+        )}
+        {currentModel === 2 && (
+          <>
+            Model 2:
+            <br />
+            Hub Network
+          </>
+        )}
+        {currentModel === 3 && (
+          <>
+            Model 3:
+            <br />
+            Router Network
+          </>
+        )}
         <div className="mt-2">
           <button
             className="bg-orange-300 hover:bg-orange-600 text-sm font-medium py-2 px-6 rounded-lg shadow-lg transition-transform transform hover:-translate-y-1 active:translate-y-0"
-            
             onClick={handleShowPopup}
           >
             Show Description

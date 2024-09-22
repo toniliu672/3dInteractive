@@ -27,7 +27,7 @@ export default function ChatBox({ show, onClose, content, isLoading, currentTopo
   const sections = validContent.split('\n\n');
 
   // Extract relevant sections
-  const title = sections[0] || "Judul Tidak Ditemukan";
+  const title = sections[0] || "Memuat";
   const description = sections[1] || "";
 
   // Split advantages and disadvantages based on keywords
@@ -50,14 +50,14 @@ export default function ChatBox({ show, onClose, content, isLoading, currentTopo
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 20 }}
           transition={{ duration: 0.3 }}
-          className="fixed md:top-48 md:bottom-48 bottom-0 right-0 m-4 w-80 max-h-48 md:max-h-96 bg-white rounded-lg shadow-lg overflow-hidden z-50"
+          className="fixed md:top-48 md:bottom-48 bottom-0 right-0 m-4 w-80 max-h-72 md:max-h-96 bg-white rounded-lg shadow-lg overflow-x-hidden z-50"
         >
           <motion.div
             className="bg-gray-100 p-4 flex justify-between items-center"
             initial={{ y: -20 }}
             animate={{ y: 0 }}
           >
-            <h3 className="text-lg font-semibold text-gray-800">{title}</h3>
+            <h2 className="text-2xl font-bold text-gray-800">{title}</h2>
             <CloseButton onClick={onClose} />
           </motion.div>
 
@@ -72,7 +72,7 @@ export default function ChatBox({ show, onClose, content, isLoading, currentTopo
               <Loading message="Mengambil data..." className="h-32" />
             ) : (
               <>
-                <p className="text-gray-600 mb-4">{description}</p>
+                <p className="text-gray-600 mb-4 text-xl">{description}</p>
                 {advantages.length > 0 && (
                   <motion.div
                     className="mb-4"
@@ -80,12 +80,12 @@ export default function ChatBox({ show, onClose, content, isLoading, currentTopo
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.3 }}
                   >
-                    <h4 className="font-semibold text-gray-700 mb-2">Kelebihan:</h4>
+                    <h3 className=" text-2xl font-semibold text-gray-700 mb-2">Kelebihan:</h3>
                     <ul className="space-y-2">
                       {advantages.map((adv, index) => (
                         <motion.li
                           key={index}
-                          className="flex items-start text-gray-600"
+                          className="flex items-start text-gray-600 text-xl"
                           initial={{ opacity: 0, x: -10 }}
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ delay: 0.4 + index * 0.1 }}
@@ -103,12 +103,12 @@ export default function ChatBox({ show, onClose, content, isLoading, currentTopo
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.5 }}
                   >
-                    <h4 className="font-semibold text-gray-700 mb-2">Kekurangan:</h4>
+                    <h3 className="font-semibold text-gray-700 mb-2 text-2xl">Kekurangan:</h3>
                     <ul className="space-y-2">
                       {disadvantages.map((disadv, index) => (
                         <motion.li
                           key={index}
-                          className="flex items-start text-gray-600"
+                          className="flex items-start text-gray-600 text-xl"
                           initial={{ opacity: 0, x: -10 }}
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ delay: 0.6 + index * 0.1 }}
