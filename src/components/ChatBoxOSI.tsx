@@ -25,7 +25,7 @@ const ChatBoxOSI: React.FC<ChatBoxOSIProps> = ({ show, onClose, content }) => {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 20 }}
           transition={{ duration: 0.3 }}
-          className="fixed bottom-0 left-0 w-full h-1/2 md:top-4 md:right-4 md:w-80 md:max-w-full md:max-h-[50vh] bg-white rounded-t-lg md:rounded-lg shadow-lg overflow-x-hidden z-50"
+          className="fixed bottom-0 left-0 w-full h-1/2 md:top-4 md:right-4 md:w-80 md:max-w-full md:max-h-[50vh] bg-white rounded-t-lg md:rounded-lg shadow-lg overflow-y-hidden z-50"
         >
           <motion.div
             className="bg-gray-100 p-4 flex justify-between items-center"

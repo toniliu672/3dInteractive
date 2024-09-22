@@ -50,7 +50,7 @@ export default function ChatBox({ show, onClose, content, isLoading, currentTopo
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 20 }}
           transition={{ duration: 0.3 }}
-          className="fixed md:top-48 md:bottom-48 bottom-0 right-0 m-4 w-80 max-h-72 md:max-h-96 bg-white rounded-lg shadow-lg overflow-x-hidden z-50"
+          className="fixed md:top-48 md:bottom-48 bottom-0 right-0 m-4 w-80 max-h-72 md:max-h-96 md:w-1/4 bg-white rounded-lg shadow-lg overflow-x-hidden z-50"
         >
           <motion.div
             className="bg-gray-100 p-4 flex justify-between items-center"
